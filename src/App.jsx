@@ -6,7 +6,9 @@ import { CATS, make } from './data'
 
 const SAMPLE = [1, 3, 5, 2, 4, 9, 1, 3]
 
-const NAV = [['home', 'Dashboard'], ['cats', 'Templates'], ['mine', 'My Designs']]
+const NAV = [['home', 'Dashboard'], 
+['cats', 'Templates'], 
+['mine', 'My Designs']]
 
 export default function App() {
   const [view, setView] = useState('home')
@@ -66,7 +68,8 @@ export default function App() {
               ))}
             </div>
           </div>
-        )}
+        )
+        }
 
         {view === 'cat' && (
           <div>
