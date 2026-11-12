@@ -4,8 +4,15 @@ export const CATS = [
   { id: 'birthday', name: 'Birthday Cards', h: 330, s: 80, def: { title: 'Happy Birthday', sub: 'Let’s celebrate!', body: 'Join us for cake, games and fun as we celebrate.', name: 'Tolu turns 30', date: 'Sat, 14 Dec · 4pm · Lagos' } },
   { id: 'wedding', name: 'Wedding Cards', h: 20, s: 55, def: { title: 'Wedding', sub: 'Together with their families', body: 'Request the honour of your presence at their wedding ceremony.', name: 'Ada & Femi', date: '12 April 2027 · 11am' } },
   { id: 'burial', name: 'Burial Programs', h: 35, s: 15, dark: 1, def: { title: 'In Loving Memory', sub: 'Celebration of Life', body: 'Gone but never forgotten. Rest in perfect peace.', name: 'Chief Samuel Okon', date: '1950 – 2026' } },
-  { id: 'season', name: 'Season’s Greetings', h: 200, s: 70, def: { title: 'Season’s Greetings', sub: 'Merry Christmas & Happy New Year', body: 'Wishing you joy, peace and love this season.', name: 'The Ayotunde Family', date: '2026' } },
-  { id: 'church', name: 'Church Programs', h: 230, s: 50, def: { title: 'Sunday Service', sub: 'Worship with us', body: 'Come and experience the presence of God. All are welcome.', name: 'Grace Chapel', date: 'Sun · 9am · Main Auditorium' } },
+  { id: 'season', name: 'Season’s Greetings', h: 200, s: 70, def: { title: 'Season’s Greetings', sub: 'Merry Christmas & Happy New Year', body: 'Wishing you joy, peace and love this season.', name: 'The Adebayo Family', date: '2026' } },
+  { id: 'church', name: 'Church Programs', h: 230, s: 50,
+    def: { title: 'Sunday Service', sub: 'Worship with us', body: '', name: 'Grace Chapel', date: 'Sun · 9am · Main Auditorium', lineup: 'Order of Service' },
+    program: [
+      { time: '8:00', item: 'Call to Worship' }, { time: '8:10', item: 'Opening Prayer' },
+      { time: '8:20', item: 'Praise & Worship' }, { time: '8:50', item: 'Scripture Reading' },
+      { time: '9:00', item: 'Offering & Tithes' }, { time: '9:15', item: 'Sermon' },
+      { time: '10:15', item: 'Altar Call' }, { time: '10:30', item: 'Benediction' },
+    ] },
   { id: 'thanks', name: 'Thanks & Appreciation', h: 150, s: 55, def: { title: 'Thank You', sub: 'With heartfelt gratitude', body: 'Thank you for being part of our special day. We are grateful.', name: 'The Johnsons', date: 'With love' } },
   { id: 'grad', name: 'Graduation Parties', h: 260, s: 65, def: { title: 'Graduation Party', sub: 'Class of 2026', body: 'Come celebrate this big achievement with food and music.', name: 'Chidi Eze', date: '20 July · 3pm' } },
   { id: 'induct', name: 'Induction Parties', h: 45, s: 80, def: { title: 'Induction Ceremony', sub: 'You are invited', body: 'Join us as we welcome our new members into the fold.', name: 'Rotary Club Lagos', date: 'Fri, 5 Sept · 6pm' } },
@@ -26,12 +33,17 @@ export function palette(cat, i) {
   ][mode]
 }
 
-// Template n (0-49): layout = n % 10 (10 layouts), variant v = floor(n / 10) (5 variants)
-// variant changes palette, font, background pattern and motif treatment
+// Template n (0-49). Standard types: layout = n % 10, variant = floor(n / 10).
+// Church programs use the 5 program layouts (10-14) with photo gallery + lineup:
+// layout = 10 + n % 5, variant = floor(n / 5) (10 colour/font variants per layout).
 export function make(cat, n) {
-  const l = n % 10, v = Math.floor(n / 10)
+  const church = cat.id === 'church'
+  const l = church ? 10 + (n % 5) : n % 10
+  const v = church ? Math.floor(n / 5) : Math.floor(n / 10)
   return {
-    cat: cat.id, layout: l, v, pat: v, img: null,
+    cat: cat.id, layout: l, v: v % 5, pat: v % 5, img: null,
+    imgs: [null, null, null, null],
+    program: (cat.program || []).map((r) => ({ ...r })),
     t: { ...cat.def },
     c: palette(cat, (3 * l + v) % 10),
     font: FONTS[(n * 3 + v) % 8],

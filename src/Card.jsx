@@ -1,8 +1,8 @@
 import { useId } from 'react'
 import { wrap } from './data'
 
-export const LAYOUTS = ['Classic frame', 'Arch photo', 'Full photo', 'Circle photo', 'Diagonal photo', 'Polaroid', 'Top band', 'Editorial', 'Badge', 'Framed photo']
-export const HAS_PHOTO = [0, 1, 1, 1, 1, 1, 0, 0, 0, 1]
+export const LAYOUTS = ['Classic frame', 'Arch photo', 'Full photo', 'Circle photo', 'Diagonal photo', 'Polaroid', 'Top band', 'Editorial', 'Badge', 'Framed photo', 'Gallery strip', 'Hero + thumbs', 'Side column', 'Photo collage', 'Stained windows']
+export const HAS_PHOTO = [0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1]
 export const PATTERNS = ['None', 'Dots', 'Diagonal', 'Crosses', 'Rings']
 
 // y: first title baseline, a: m(iddle)/s(tart), x: text x, mw: body wrap, bm: max body lines, cap: max title size
@@ -58,7 +58,7 @@ function Decor({ cat, col, v, s }) {
   return <g><g transform="scale(.85)">{m}</g>{[[-90, -40], [95, -45], [-100, 40], [105, 45], [0, -90]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="4" fill={col} />)}</g>
 }
 
-export default function Card({ d, id, onPick }) {
+function PlainCard({ d, id, onPick }) {
   const { layout: L, t, c, font, cat, pat = 0, v = 0, img } = d
   const uid = useId().replace(/:/g, '')
   const [pid, cid, gid] = ['p', 'c', 'g'].map((k) => k + uid)
@@ -142,4 +142,117 @@ export default function Card({ d, id, onPick }) {
       <text {...T} y={dateY} fontSize="20" fill={acol} style={sans} onClick={pick('date')}>{t.date}</text>
     </svg>
   )
+}
+
+// ---------- Church program layouts: multi-photo gallery + order of service ----------
+export const SLOTS = { 10: 3, 11: 4, 12: 3, 13: 4, 14: 3 } // photo slots per program layout
+const CFG = {
+  10: { ty: 122, sy: 158, ls: 392, rh: 32 }, 11: { ty: 268, sy: 302, ls: 458, rh: 29 },
+  12: { ty: 102, sy: 138, ls: 215, rh: 44 }, 13: { ty: 395, sy: 429, ls: 488, rh: 28 },
+  14: { ty: 322, sy: 358, ls: 432, rh: 30 },
+}
+
+function ProgramCard({ d, id, onPick }) {
+  const { layout: L, t, c, font, cat, pat = 0, imgs = [], program = [] } = d
+  const uid = useId().replace(/:/g, '')
+  const pid = 'p' + uid, gid = 'g' + uid
+  const cfg = CFG[L]
+  const pick = (k) => (onPick ? () => onPick(k) : undefined)
+  const cur = onPick ? 'pointer' : 'default'
+  const st = { cursor: cur, fontFamily: `'${font}',serif` }
+  const sans = { ...st, fontFamily: 'Inter,sans-serif' }
+  const ts = Math.max(22, Math.min(d.ts, 44, Math.floor(500 / (Math.max((t.title || '').length, 1) * 0.55))))
+
+  const slot = (i, x, y, w, h, arch) => {
+    const cid = `c${uid}${i}`
+    const shape = arch ? `M${x} ${y + h}V${y + w / 2}A${w / 2} ${w / 2} 0 0 1 ${x + w} ${y + w / 2}V${y + h}Z` : null
+    const k = Math.min(1, Math.min(w, h) / 130)
+    return (
+      <g key={i} onClick={pick('photo:' + i)} style={{ cursor: cur }}>
+        <clipPath id={cid}>{arch ? <path d={shape} /> : <rect x={x} y={y} width={w} height={h} rx="6" />}</clipPath>
+        <g clipPath={`url(#${cid})`}>
+          {imgs[i] ? <image href={imgs[i]} x={x} y={y} width={w} height={h} preserveAspectRatio="xMidYMid slice" /> : (
+            <g>
+              <rect x={x} y={y} width={w} height={h} fill={`url(#${gid})`} />
+              <g transform={`translate(${x + w / 2},${y + h / 2}) scale(${k})`} fill="#fff" opacity=".75">
+                <path d="M-40 20L-14 -14L6 8L18 -6L40 20Z" /><circle cx="22" cy="-22" r="8" />
+                {onPick && <text y="52" textAnchor="middle" fontSize="16" fontFamily="Inter,sans-serif">Photo {i + 1}</text>}
+              </g>
+            </g>
+          )}
+        </g>
+        {arch ? <path d={shape} fill="none" stroke={c.ac} strokeWidth="2.5" /> : <rect x={x} y={y} width={w} height={h} rx="6" fill="none" stroke={c.ac} strokeWidth="2" />}
+      </g>
+    )
+  }
+
+  const rows = program.slice(0, 8)
+  const lineup = (cx, y0, rh, side) => {
+    const ctr = side === 'c'
+    const tx = ctr ? cx - 14 : cx, ix = ctr ? cx + 14 : cx + 70
+    const x1 = ctr ? 60 : cx - 4, x2 = ctr ? 540 : 570
+    return (
+      <g>
+        <text x={ctr ? 300 : cx} y={y0 - 24} textAnchor={ctr ? 'middle' : 'start'} fontSize="18" letterSpacing="3" fill={c.ac} style={st} onClick={pick('lineup')}>{(t.lineup || '').toUpperCase()}</text>
+        {rows.map((r, i) => (
+          <g key={i} onClick={pick('program')} style={{ cursor: cur }}>
+            <text x={tx} y={y0 + i * rh} textAnchor={ctr ? 'end' : 'start'} fontSize="17" fontWeight="700" fill={c.ac} style={sans}>{r.time}</text>
+            <text x={ix} y={y0 + i * rh} fontSize="17" fill={c.tx} style={sans}>{r.item}</text>
+            <line x1={x1} x2={x2} y1={y0 + i * rh + rh * 0.3} y2={y0 + i * rh + rh * 0.3} stroke={c.ac} opacity=".3" strokeDasharray="2 4" />
+          </g>
+        ))}
+      </g>
+    )
+  }
+
+  const motif = (x, y, s, badge) => (
+    <g transform={`translate(${x},${y})`}>
+      {badge && <circle r="30" fill={c.bg} stroke={c.ac} strokeWidth="3" />}
+      <g transform={`scale(${s})`}><Motif cat={cat} col={c.ac} /></g>
+    </g>
+  )
+
+  return (
+    <svg id={id} viewBox="0 0 600 800" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id={pid} width="28" height="28" patternUnits="userSpaceOnUse">
+          {pat === 1 && <circle cx="14" cy="14" r="2.2" fill={c.ac} />}
+          {pat === 2 && <path d="M-4 32L32 -4" stroke={c.ac} strokeWidth="1.5" />}
+          {pat === 3 && <path d="M14 8V20M8 14H20" stroke={c.ac} strokeWidth="1.5" />}
+          {pat === 4 && <circle cx="14" cy="14" r="9" fill="none" stroke={c.ac} strokeWidth="1.2" />}
+        </pattern>
+        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={c.ac} /><stop offset="1" stopColor={c.bg} /></linearGradient>
+      </defs>
+      <rect width="600" height="800" fill={c.bg} />
+      {pat > 0 && <rect width="600" height="800" fill={`url(#${pid})`} opacity=".16" />}
+
+      {L === 10 && <>
+        <rect x="20" y="20" width="560" height="760" fill="none" stroke={c.ac} strokeWidth="3" />
+        {[0, 1, 2].map((i) => slot(i, 46 + i * 174, 185, 160, 130))}{motif(300, 62, 0.45)}
+      </>}
+      {L === 11 && <>
+        {slot(0, 40, 36, 520, 190)}{[1, 2, 3].map((i) => slot(i, 40 + (i - 1) * 180, 326, 160, 76))}{motif(300, 226, 0.35, true)}
+      </>}
+      {L === 12 && <>
+        <line x1="240" x2="240" y1="180" y2="664" stroke={c.ac} strokeWidth="2" />
+        {[0, 1, 2].map((i) => slot(i, 36, 180 + i * 166, 190, 152))}{motif(300, 52, 0.45)}
+      </>}
+      {L === 13 && <>
+        {slot(0, 36, 30, 258, 150)}{slot(1, 306, 30, 258, 150)}{slot(2, 36, 192, 258, 150)}{slot(3, 306, 192, 258, 150)}{motif(300, 186, 0.35, true)}
+      </>}
+      {L === 14 && <>
+        {[0, 1, 2].map((i) => slot(i, 36 + i * 182, 40, 164, 200, true))}{motif(300, 272, 0.35)}
+      </>}
+
+      <text x="300" y={cfg.ty} textAnchor="middle" fontSize={ts} fill={c.tx} style={st} onClick={pick('title')}>{t.title}</text>
+      <text x="300" y={cfg.sy} textAnchor="middle" fontSize="22" fill={c.ac} style={st} onClick={pick('sub')}>{t.sub}</text>
+      {L === 12 ? lineup(252, cfg.ls, cfg.rh, 'r') : lineup(300, cfg.ls, cfg.rh, 'c')}
+      <text x="300" y="726" textAnchor="middle" fontSize="30" fill={c.tx} style={st} onClick={pick('name')}>{t.name}</text>
+      <text x="300" y="758" textAnchor="middle" fontSize="18" fill={c.ac} style={sans} onClick={pick('date')}>{t.date}</text>
+    </svg>
+  )
+}
+
+export default function Card(props) {
+  return props.d.layout >= 10 ? <ProgramCard {...props} /> : <PlainCard {...props} />
 }

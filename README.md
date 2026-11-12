@@ -12,7 +12,7 @@ Built with React 18 and Vite. No backend, no database, no image files. Every tem
 | Wedding Cards | 50 |
 | Burial Programs | 50 |
 | Season's Greetings | 50 |
-| Church Programs | 50 |
+| Church Programs | 50 (photo gallery + program lineup) |
 | Thanks & Appreciation | 50 |
 | Graduation Parties | 50 |
 | Induction Parties | 50 |
@@ -26,6 +26,7 @@ That is **400 templates**. Each one differs in layout, colour mood, font, backgr
 - **Editor:** edit the title, subtitle, message, name and date. Click any text on the card to jump to its field.
 - **Photo import:** upload your own picture into photo-slot layouts. It is resized in the browser and embedded in the SVG.
 - **Full control:** switch layout, background pattern, font, title size and the three colours (background, accent, text) on any template.
+- **Church programs:** every church template has several photo slots (3 or 4) and an editable program lineup (up to 8 time + item rows) with its own heading.
 - **Export:** download the finished card as an SVG.
 - **My Designs:** save designs and reopen them (kept for the current session).
 - **Responsive and themed:** works on phones and follows the system light or dark mode.
@@ -79,6 +80,8 @@ A design is a plain object (`layout`, `t` for texts, `c` for colours, `font`, `t
 Classic frame, Arch photo 📷, Full photo 📷, Circle photo 📷, Diagonal photo 📷, Polaroid 📷, Top band, Editorial, Badge, Framed photo 📷
 
 Layouts marked 📷 have a photo slot.
+
+**Church programs** use five dedicated layouts (10 variants each): Gallery strip 📷, Hero + thumbs 📷, Side column 📷, Photo collage 📷 and Stained windows 📷. They hold 3 or 4 photos plus the order of service. Their lineup is stored in `design.program` (`[{ time, item }]`, max 8) and their photos in `design.imgs`. To give another category a lineup, set `program` on its entry in `CATS` and reuse the program layouts.
 
 ## Customising
 

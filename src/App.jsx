@@ -6,9 +6,7 @@ import { CATS, make } from './data'
 
 const SAMPLE = [1, 3, 5, 2, 4, 9, 1, 3]
 
-const NAV = [['home', 'Dashboard'], 
-['cats', 'Templates'], 
-['mine', 'My Designs']]
+const NAV = [['home', 'Dashboard'], ['cats', 'Templates'], ['mine', 'My Designs']]
 
 export default function App() {
   const [view, setView] = useState('home')
@@ -35,7 +33,7 @@ export default function App() {
         ))}
         <div className="user">
           <div className="av">AB</div>
-          <div><b>Ayotunde</b><br /><small style={{ color: 'var(--mut)' }}>ayotunde@memora.com</small></div>
+          <div><b>Adebayo</b><br /><small style={{ color: 'var(--mut)' }}>adex@example.com</small></div>
         </div>
       </aside>
 
@@ -48,7 +46,7 @@ export default function App() {
         {view === 'home' && (
           <div>
             <div className="banner">
-              <h1>Welcome back, Ayotunde!</h1>
+              <h1>Welcome back, Adebayo!</h1>
               <p>Ready to craft your next memorable event?</p>
               <p>Pick a card type below to browse its templates.</p>
             </div>
@@ -68,8 +66,7 @@ export default function App() {
               ))}
             </div>
           </div>
-        )
-        }
+        )}
 
         {view === 'cat' && (
           <div>
@@ -81,10 +78,10 @@ export default function App() {
               </select>
             </div>
             <div className="grid">
-              {Array.from({ length: 50 }, (_, n) => n).filter((n) => flt === 'all' || (flt === 'photo') === !!HAS_PHOTO[n % 10]).map((n) => (
+              {Array.from({ length: 50 }, (_, n) => n).filter((n) => flt === 'all' || (flt === 'photo') === !!HAS_PHOTO[make(cat, n).layout]).map((n) => (
                 <button key={n} className="tile" onClick={() => openTemplate(cat, n)}>
                   <Card d={make(cat, n)} />
-                  <small>#{n + 1} · {LAYOUTS[n % 10]}</small>
+                  <small>#{n + 1} · {LAYOUTS[make(cat, n).layout]}</small>
                 </button>
               ))}
             </div>
