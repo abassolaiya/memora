@@ -117,4 +117,5 @@ Layouts marked 📷 have a photo slot.
 
 ## Tech
 
+
 React 18 · Vite 5 · plain CSS · inline SVG
